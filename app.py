@@ -58,10 +58,15 @@ def operate(operation,container):
 
 def read_global():
     global global_data
-    with open(GLOBAL_FILE,'r') as f:
-        d = json.loads(f.read())
-    global_data.update(d)
-    return global_data
+    try:
+        with open(GLOBAL_FILE,'r') as f:
+            d = json.loads(f.read())
+        global_data.update(d)
+    except FileNotFoundError:
+        global_data = {}
+    finally: 
+        return global_data
+
 
 def write_global():
     global global_data
