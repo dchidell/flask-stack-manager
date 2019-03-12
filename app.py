@@ -36,8 +36,8 @@ def operate(operation,container):
     elif operation == 'clearlogs':
         log_dates[container['Id']] = int(time.time())
     elif operation == 'logs':
-        if log_dates.get(container['Id'],None) is not None:
-            return_data = container.logs(since=log_dates.get(container['Id'],None)).decode().replace('\n','<br>')
+        if log_dates.get(container.attrs['Id'],None) is not None:
+            return_data = container.logs(since=log_dates.get(container.attrs['Id'],None)).decode().replace('\n','<br>')
         else:
             return_data = container.logs().decode().replace('\n','<br>')
 
