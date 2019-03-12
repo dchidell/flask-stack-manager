@@ -2,12 +2,14 @@ from flask import Flask, request, jsonify, redirect, url_for
 from jinja2 import Environment, FileSystemLoader
 import docker
 import time
+import json
 
 __author__ = 'David Chidell (dchidell@cisco.com)'
 
 app = Flask(__name__)
 
-log_dates = {}
+GLOBAL_FILE = 'global.conf'
+global_data = {}
 
 @app.route('/')
 def index():
@@ -26,6 +28,7 @@ def index():
 
 @app.route('/api/operate/<operation>/<container>',methods=['GET'])
 def operate(operation,container):
+    global global_data
     client = docker.from_env()
     container = client.containers.get(container)
     return_data = jsonify({'success':True})
@@ -34,10 +37,13 @@ def operate(operation,container):
     elif operation == 'stop':
         container.kill()
     elif operation == 'clearlogs':
-        log_dates[container.attrs['Id']] = int(time.time())
+        global_data[container.attrs['Id']+'_logs'] = int(time.time())
+        write_global()
     elif operation == 'logs':
-        if log_dates.get(container.attrs['Id'],None) is not None:
-            return_data = container.logs(since=log_dates.get(container.attrs['Id'],None)).decode().replace('\n','<br>')
+        read_global()
+        log_stamp = global_data.get(container.attrs['Id']+'_logs',None)
+        if log_stamp is not None:
+            return_data = container.logs(since=log_stamp).decode().replace('\n','<br>')
         else:
             return_data = container.logs().decode().replace('\n','<br>')
 
@@ -50,38 +56,19 @@ def operate(operation,container):
     else:
         return redirect(redirect_path)
 
-#@app.errorhandler(Exception)
-#def unhandled_exception(e):
-#    return str(e)
+def read_global():
+    global global_data
+    with open(GLOBAL_FILE,'r') as f:
+        d = json.loads(f.read())
+    global_data.update(d)
+    return global_data
 
-'''
-@app.route('/api/info/<name>',methods=['GET'])
-def logs(name):
-    client = docker.from_env()
+def write_global():
+    global global_data
+    read_global()
+    with open(GLOBAL_FILE,'w') as f:
+        f.write(json.dumps(global_data))
 
-
-    try:
-        
-
-    
-
-    
-    json_dict = request.json
-    if type(json_dict) is not dict:
-        response['exception'] = 'Unable to parse JSON. Ensure Content-Type is set correctly and payload is valid JSON.'
-    else:
-        try:
-            module = importlib.import_module(name)
-            output = module.invoke(json_dict).execute()
-            response['output'] = output
-            response['success'] = True
-        except Exception as e:
-            response['exception'] = str(e)
-        finally:
-            del module
-
-    return jsonify(response)
-'''
 if __name__ == '__main__':
     app.run()
 
