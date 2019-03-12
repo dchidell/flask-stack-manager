@@ -15,10 +15,10 @@ def index():
         rule = container.labels.get('traefik.frontend.rule',None)
         if rule is None or 'catchall' in rule: continue
         
-        output_list.append({'attrs':container.attrs,'labels':container.labels})
+        output_list.append(container.attrs)
 
     env = Environment(loader = FileSystemLoader('.'))
-    template = env.get_template('index.html.jinja2')
+    template = env.get_template('main.html')
     return template.render(config=output_list)
 
 @app.route('/api/operate/<operation>/<container>',methods=['GET'])

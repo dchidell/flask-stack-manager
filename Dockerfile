@@ -6,6 +6,6 @@ RUN pip install --install-option="--prefix=/install" -r requirements.txt
 FROM build
 COPY --from=build /install /usr/local
 COPY *.py ./
-COPY index.html.jinja2 ./
+COPY main.html ./
 ENTRYPOINT ["gunicorn"]
 CMD ["app:app","-b",":8080"]
