@@ -61,7 +61,8 @@ def read_global():
     try:
         with open(GLOBAL_FILE,'r') as f:
             d = json.loads(f.read())
-        global_data.update(d)
+        d.update(global_data)
+        global_data = d
     except FileNotFoundError:
         global_data = {}
     finally: 
