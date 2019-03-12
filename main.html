@@ -25,6 +25,7 @@
               <th scope="col">Manage</th>
               <th scope="col">Action</th>
               <th scope="col">Logs</th>
+              <th scope="col">Clear Logs</th>
             </tr>
           </thead>
           <tbody>
@@ -61,6 +62,12 @@
                   <span class="fa fa-align-justify fa" aria-hidden="true"></span>
                 </a>
               </td>
+              <td>
+                  <a class="btn btn-danger" href="api/operate/clearlogs/{{ container['Name'].replace('/','') }}">
+                    <span class="fa fa-exclamation-triangle fa" aria-hidden="true"></span>
+                    Clear
+                  </a>
+                </td>
               {% endfor %}
             </tr>
           </tbody>

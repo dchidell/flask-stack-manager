@@ -1,10 +1,13 @@
 from flask import Flask, request, jsonify, redirect, url_for
 from jinja2 import Environment, FileSystemLoader
 import docker
+import time
 
 __author__ = 'David Chidell (dchidell@cisco.com)'
 
 app = Flask(__name__)
+
+log_dates = {}
 
 @app.route('/')
 def index():
@@ -30,8 +33,13 @@ def operate(operation,container):
         container.start()
     elif operation == 'stop':
         container.kill()
+    elif operation == 'clearlogs':
+        log_dates[container['Id']] = int(time.time())
     elif operation == 'logs':
-        return_data = container.logs().decode().replace('\n','<br>')
+        if log_dates.get(container['Id'],None) is not None:
+            return_data = container.logs(log_dates.get(container['Id'],None)).decode().replace('\n','<br>')
+        else:
+            return_data = container.logs().decode().replace('\n','<br>')
 
     redirect_path = request.args.get('redir',None)
 
