@@ -29,7 +29,7 @@ def operate(operation,container):
     if operation == 'start':
         container.start()
     elif operation == 'stop':
-        container.stop()
+        container.kill()
     elif operation == 'logs':
         return_data = container.logs().decode().replace('\n','<br>')
 

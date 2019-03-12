@@ -8,4 +8,4 @@ COPY --from=build /install /usr/local
 COPY *.py ./
 COPY main.html ./
 ENTRYPOINT ["gunicorn"]
-CMD ["app:app","-b",":8080"]
+CMD ["app:app","-b",":8080","-w","8"]
