@@ -9,7 +9,6 @@ __author__ = 'David Chidell (dchidell@cisco.com)'
 app = Flask(__name__)
 
 GLOBAL_FILE = 'global.conf'
-global_data = {}
 
 @app.route('/')
 def index():
@@ -28,7 +27,7 @@ def index():
 
 @app.route('/api/operate/<operation>/<container>',methods=['GET'])
 def operate(operation,container):
-    global global_data
+    
     client = docker.from_env()
     container = client.containers.get(container)
     return_data = jsonify({'success':True})
@@ -37,10 +36,11 @@ def operate(operation,container):
     elif operation == 'stop':
         container.kill()
     elif operation == 'clearlogs':
+        global_data = {}
         global_data[container.attrs['Id']+'_logs'] = int(time.time())
-        write_global()
+        write_global(global_data)
     elif operation == 'logs':
-        read_global()
+        global_data = read_global()
         log_stamp = global_data.get(container.attrs['Id']+'_logs',None)
         if log_stamp is not None:
             return_data = container.logs(since=log_stamp).decode().replace('\n','<br>')
@@ -56,8 +56,7 @@ def operate(operation,container):
     else:
         return redirect(redirect_path)
 
-def read_global():
-    global global_data
+def read_global(global_data={}):
     try:
         with open(GLOBAL_FILE,'r') as f:
             d = json.loads(f.read())
@@ -69,9 +68,8 @@ def read_global():
         return global_data
 
 
-def write_global():
-    global global_data
-    read_global()
+def write_global(global_data):
+    global_data = read_global(global_data)
     with open(GLOBAL_FILE,'w') as f:
         f.write(json.dumps(global_data))
 
