@@ -19,7 +19,7 @@ def index():
 
     env = Environment(loader = FileSystemLoader('.'))
     template = env.get_template('main.html')
-    return template.render(config=output_list)
+    return template.render(config=output_list,hostname=client.info()['Name'])
 
 @app.route('/api/operate/<operation>/<container>',methods=['GET'])
 def operate(operation,container):
