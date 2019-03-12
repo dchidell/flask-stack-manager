@@ -64,7 +64,7 @@ def read_global():
         d.update(global_data)
         global_data = d
     except FileNotFoundError:
-        global_data = {}
+        pass
     finally: 
         return global_data
 
