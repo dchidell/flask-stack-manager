@@ -36,16 +36,14 @@ def operate(operation,container):
     elif operation == 'stop':
         container.kill()
     elif operation == 'clearlogs':
-        global_data = {}
-        global_data[container.attrs['Id']+'_logs'] = int(time.time())
-        write_global(global_data)
+        log_file = container.attrs['LogPath']
+        try:
+            open(log_file,"w").close()
+        except PermissionError:
+            return_data = jsonify({'success':False, "message":"Cannot access logfile (Permission Denied)"})
+
     elif operation == 'logs':
-        global_data = read_global()
-        log_stamp = global_data.get(container.attrs['Id']+'_logs',None)
-        if log_stamp is not None:
-            return_data = container.logs(since=log_stamp).decode().replace('\n','<br>')
-        else:
-            return_data = container.logs().decode().replace('\n','<br>')
+        return_data = container.logs().decode().replace('\n','<br>')
 
     redirect_path = request.args.get('redir',None)
 
@@ -55,23 +53,6 @@ def operate(operation,container):
         return redirect(url_for('index'))
     else:
         return redirect(redirect_path)
-
-def read_global(global_data={}):
-    try:
-        with open(GLOBAL_FILE,'r') as f:
-            d = json.loads(f.read())
-        d.update(global_data)
-        global_data = d
-    except FileNotFoundError:
-        pass
-    finally: 
-        return global_data
-
-
-def write_global(global_data):
-    global_data = read_global(global_data)
-    with open(GLOBAL_FILE,'w') as f:
-        f.write(json.dumps(global_data))
 
 if __name__ == '__main__':
     app.run()
